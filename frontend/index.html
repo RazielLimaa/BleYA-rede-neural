@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Imagens com GAN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            min-width: 80px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-batch {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-batch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .image-container {
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        #generatedImage {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .placeholder {
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .info h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+
+        .info p {
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Gerador de Imagens GAN</h1>
+        <p class="subtitle">Rede neural geradora de dígitos usando PyTorch</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="seedInput">Seed:</label>
+                <input type="number" id="seedInput" placeholder="Deixe vazio para aleatório" min="0">
+            </div>
+            
+            <div class="control-group">
+                <label for="batchSize">Quantidade:</label>
+                <input type="number" id="batchSize" value="4" min="1" max="16">
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-generate" id="generateBtn" onclick="generateImage()">
+                🎲 Gerar Imagem
+            </button>
+            <button class="btn-batch" id="batchBtn" onclick="generateBatch()">
+                📸 Gerar Lote
+            </button>
+        </div>
+
+        <div class="image-container" id="imageContainer">
+            <div class="placeholder" id="placeholder">
+                Clique em "Gerar Imagem" para criar uma nova imagem
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Gerando imagem...</p>
+            </div>
+            <img id="generatedImage" alt="Imagem Gerada">
+            <div class="gallery" id="gallery"></div>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="info">
+            <h3>ℹ️ Como funciona</h3>
+            <p>
+                Esta aplicação usa uma <strong>Rede Adversarial Generativa (GAN)</strong> 
+                treinada no dataset MNIST para gerar imagens de dígitos manuscritos. 
+                Cada vez que você clica em "Gerar Imagem", a rede neural cria uma nova 
+                imagem sintética a partir de ruído aleatório. Use a seed para reproduzir 
+                resultados específicos.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const placeholder = document.getElementById('placeholder');
+            const image = document.getElementById('generatedImage');
+            const gallery = document.getElementById('gallery');
+            
+            if (show) {
+                loading.style.display = 'flex';
+                placeholder.style.display = 'none';
+                image.style.display = 'none';
+                gallery.innerHTML = '';
+            } else {
+                loading.style.display = 'none';
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function disableButtons(disabled) {
+            document.getElementById('generateBtn').disabled = disabled;
+            document.getElementById('batchBtn').disabled = disabled;
+        }
+
+        async function generateImage() {
+            const seedInput = document.getElementById('seedInput').value;
+            const placeholder = document.getElementById('placeholder');
+            const image = document.getElementById('generatedImage');
+            const gallery = document.getElementById('gallery');
+            
+            showLoading(true);
+            disableButtons(true);
+            gallery.innerHTML = '';
+            
+            try {
+                const requestBody = {};
+                if (seedInput) {
+                    requestBody.seed = parseInt(seedInput);
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                image.src = `data:image/png;base64,${data.image}`;
+                image.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                showStatus('Imagem gerada com sucesso! 🎉', 'success');
+            } catch (error) {
+                console.error('Erro ao gerar imagem:', error);
+                showStatus(`Erro ao gerar imagem: ${error.message}`, 'error');
+                placeholder.style.display = 'block';
+            } finally {
+                showLoading(false);
+                disableButtons(false);
+            }
+        }
+
+        async function generateBatch() {
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const placeholder = document.getElementById('placeholder');
+            const image = document.getElementById('generatedImage');
+            const gallery = document.getElementById('gallery');
+            
+            if (batchSize < 1 || batchSize > 16) {
+                showStatus('Por favor, escolha entre 1 e 16 imagens', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            disableButtons(true);
+            image.style.display = 'none';
+            gallery.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/generate-batch?num_images=${batchSize}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                placeholder.style.display = 'none';
+                
+                data.images.forEach((imageBase64, index) => {
+                    const img = document.createElement('img');
+                    img.src = `data:image/png;base64,${imageBase64}`;
+                    img.alt = `Imagem Gerada ${index + 1}`;
+                    gallery.appendChild(img);
+                });
+                
+                showStatus(`${data.count} imagens geradas com sucesso! 🎉`, 'success');
+            } catch (error) {
+                console.error('Erro ao gerar lote:', error);
+                showStatus(`Erro ao gerar lote: ${error.message}`, 'error');
+                placeholder.style.display = 'block';
+            } finally {
+                showLoading(false);
+                disableButtons(false);
+            }
+        }
+
+        async function checkAPIHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                console.log('API Status:', data);
+            } catch (error) {
+                console.error('Erro ao verificar API:', error);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            checkAPIHealth();
+        });
+
+        document.getElementById('seedInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateImage();
+            }
+        });
+    </script>
+</body>
+</html>

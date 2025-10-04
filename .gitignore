@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.pythonlibs/
+
+# PyTorch
+*.pth
+*.pt
+
+# Data
+data/
+*.npz
+
+# Outputs
+outputs/
+checkpoints/
+*.png
+*.jpg
+*.jpeg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# uv
+uv.lock
