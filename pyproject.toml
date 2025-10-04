@@ -5,9 +5,12 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.118.0",
+    "gensim>=4.3.2",
     "numpy>=2.3.3",
     "pillow>=11.3.0",
+    "pydantic>=2.11.10",
     "python-multipart>=0.0.20",
+    "scipy>=1.16.2",
     "torch>=2.8.0",
     "torchvision>=0.23.0",
     "uvicorn>=0.37.0",
