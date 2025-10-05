@@ -115,8 +115,8 @@ pip install -r requirements.txt
 - ✅ API REST funcional
 - ✅ Frontend básico disponível
 - ⚠️ Ainda em **fase de testes**
-- ⚠️ Contém **erros e limitações** devido ao aprendizado em ML
-- ⚠️ Algumas partes foram desenvolvidas com **apoio de IA**
+- ⚠️ Contém **erros e limitações** devido ao aprendizado em ML e PY
+- ⚠️ O projeto foi desenvolvido com **apoio de IA**!!
 
 
 ---
