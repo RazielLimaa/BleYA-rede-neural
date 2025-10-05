@@ -10,6 +10,9 @@ ENV/
 .venv
 .pythonlibs/
 
+# javascript
+.javascript
+
 # PyTorch
 *.pth
 *.pt
