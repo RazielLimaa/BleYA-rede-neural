@@ -21,13 +21,6 @@ ENV/
 data/
 *.npz
 
-# Outputs
-outputs/
-checkpoints/
-*.png
-*.jpg
-*.jpeg
-
 # IDE
 .vscode/
 .idea/
