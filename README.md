@@ -1,113 +1,143 @@
-# Gerador de Imagens com GAN
+# 🖼️ Gerador de Imagens com GAN (PyTorch)
 
-## Visão Geral
-Projeto completo de rede neural geradora de imagens (GAN - Generative Adversarial Network) implementado em PyTorch. O sistema inclui treinamento com MNIST, API REST e interface web para geração de imagens.
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)  
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0-red.svg)](https://pytorch.org/)  
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green.svg)](https://fastapi.tiangolo.com/)  
+[![Status](https://img.shields.io/badge/Status-Em%20Teste-yellow.svg)]()
 
-## Estrutura do Projeto
+---
 
-### Módulos Principais
-- **models.py** - Arquiteturas do Gerador e Discriminador
-  - Generator: converte vetor de ruído (100 dim) em imagem 28x28
-  - Discriminator: classifica imagens como reais ou falsas
-  
-- **utils.py** - Funções auxiliares
-  - Gerenciamento de checkpoints
-  - Conversão de imagens (tensor → PIL → base64)
-  - Logging e configuração de seeds
-  
-- **train.py** - Pipeline de treinamento
-  - Dataset: MNIST (dígitos manuscritos)
-  - Tracking de perdas do Gerador e Discriminador
-  - Salvamento automático de checkpoints
-  - Geração de amostras durante treinamento
-  
-- **api.py** - Servidor FastAPI
-  - Endpoint `/generate` - gera imagem única
-  - Endpoint `/generate-batch` - gera múltiplas imagens
-  - Endpoint `/health` - status da API
-  - Endpoint `/model-info` - informações do modelo
-  
-- **frontend/index.html** - Interface web
-  - Botão para gerar imagem individual
-  - Botão para gerar lote de imagens
-  - Controle de seed para reprodutibilidade
-  - Display de imagens geradas
+## 📌 Visão Geral
+Este projeto implementa uma **GAN (Generative Adversarial Network)** em **PyTorch**, capaz de gerar imagens sintéticas a partir de ruído aleatório.  
+Inclui **pipeline de treinamento**, **API REST** com **FastAPI** e **frontend web** para geração de imagens.  
 
-## Como Usar
+➡️ **Projeto público e open-source**  
+➡️ **Ainda em fase de testes, com erros e limitações devido ao meu aprendizado em Machine Learning**  
+➡️ **Foi desenvolvido com auxílio de IA para estruturar e aprender os conceitos envolvidos**  
 
-### 1. Treinamento (Opcional)
-Para treinar o modelo com o dataset MNIST:
+---
+
+## 🏗️ Estrutura do Projeto
+- **`models.py`** → arquiteturas do **Gerador** e **Discriminador**  
+- **`utils.py`** → checkpoints, conversão de imagens, seeds  
+- **`train.py`** → pipeline de treino com MNIST  
+- **`api.py`** → servidor FastAPI para gerar imagens  
+- **`frontend/index.html`** → interface web simples para interação  
+
+---
+
+## 📚 Conceitos Técnicos
+
+### Dataset
+- **MNIST** → imagens de dígitos manuscritos (0–9), 28x28 pixels, preto e branco  
+
+### Vetor de Ruído (Latent Vector)
+- Entrada do **Gerador**, normalmente de 100 dimensões, que é transformado em uma imagem  
+
+### Funções de Ativação
+- **ReLU** → ativa valores positivos (Gerador)  
+- **Tanh** → saída normalizada entre -1 e 1 (Gerador)  
+- **LeakyReLU** → evita neurônios mortos (Discriminador)  
+
+### Funções de Perda
+- **Loss do Discriminador** → mede se ele acerta entre imagens reais e falsas  
+- **Loss do Gerador** → mede se consegue enganar o Discriminador  
+
+### Checkpoints
+- Arquivos salvos com os pesos do modelo, para retomar treino ou gerar imagens depois  
+
+---
+
+## 📊 Resultados de Treinamento
+
+A cada época, o Gerador melhora sua capacidade de criar imagens.  
+
+### Epoch 01
+Logo no início, as imagens são apenas **ruído sem forma**:  
+![Treinamento Época 01](outputs/training/epoch_01.png)  
+
+### Epoch 19
+Após várias épocas, os dígitos já se tornam **mais reconhecíveis**:  
+![Treinamento Época 19](outputs/training/epoch_19.png)  
+
+---
+
+## 🚀 Como Usar
+
+### 1. Treinar o modelo
 ```bash
 python train.py --mode train --epochs 20 --batch_size 128
 ```
 
-Para gerar amostras de teste:
-```bash
+### 2. Gerar amostras
+
+```shellscript
 python train.py --mode generate --samples 100 --checkpoint checkpoints/final_model.pth
 ```
 
-### 2. Servidor API
-O servidor já está rodando automaticamente na porta 5000. Para iniciar manualmente:
-```bash
+### 3. Iniciar servidor API
+
+```shellscript
 python api.py
 ```
 
-### 3. Interface Web
-Acesse `/app` no navegador para usar a interface web.
+Acesse em `http://localhost:5000`
 
-**Nota:** O modelo funciona mesmo sem treinamento prévio (usa pesos aleatórios para demonstração). Para resultados de qualidade, execute o treinamento primeiro.
+### 4. Usar a interface web
 
-## Arquitetura da GAN
+```plaintext
+http://localhost:5000/app
+```
 
-### Gerador
-- Input: vetor de ruído aleatório (100 dimensões)
-- Camadas: Linear → Reshape → ConvTranspose2d (3 camadas)
-- Ativação: ReLU nas camadas ocultas, Tanh na saída
-- Output: imagem 28x28x1 (escala de cinza)
+---
 
-### Discriminador
-- Input: imagem 28x28x1
-- Camadas: Conv2d (3 camadas) com BatchNorm e Dropout
-- Ativação: LeakyReLU(0.2)
-- Output: probabilidade [0,1] (real vs falso)
+## ️ Dependências
 
-## Endpoints da API
+- Python 3.10+
+- PyTorch / TorchVision
+- FastAPI / Uvicorn
+- Pillow
+- NumPy
+- python-multipart
 
-- `GET /` - Informações da API
-- `GET /health` - Status de saúde
-- `GET /model-info` - Detalhes do modelo
-- `POST /generate` - Gera uma imagem
-  - Body (opcional): `{"seed": 42}` para reprodutibilidade
-- `POST /generate-batch?num_images=4` - Gera múltiplas imagens
 
-## Dependências
-- torch / torchvision - Deep Learning
-- fastapi / uvicorn - API REST
-- pillow - Processamento de imagens
-- numpy - Operações numéricas
-- python-multipart - Upload de arquivos
+Instalar dependências:
 
-## Diretórios
-- `checkpoints/` - Modelos salvos durante treinamento
-- `outputs/training/` - Amostras geradas durante treinamento
-- `outputs/generated/` - Imagens geradas em batch
-- `data/` - Dataset MNIST (baixado automaticamente)
+```shellscript
+pip install -r requirements.txt
+```
 
-## Características
-- Seed fixa para reprodutibilidade
-- Logging detalhado de todas as operações
-- Checkpoints automáticos a cada 5 épocas
-- Geração de amostras durante treinamento
-- API robusta com tratamento de erros
-- Frontend responsivo e intuitivo
-- Funciona sem GPU (otimizado para CPU)
+---
 
-## Próximas Melhorias Sugeridas
-1. Upgrade para DCGAN com imagens 64x64 coloridas
-2. Conditional GAN para gerar dígitos específicos
-3. Métricas de qualidade (FID, IS)
-4. Gallery persistente de imagens geradas
-5. Download de imagens pelo frontend
+## Estado Atual do Projeto
+
+- ✅ Estrutura inicial da GAN implementada
+- ✅ API REST funcional
+- ✅ Frontend básico disponível
+- ⚠️ Ainda em **fase de testes**
+- ⚠️ Contém **erros e limitações** devido ao aprendizado em ML
+- ⚠️ Algumas partes foram desenvolvidas com **apoio de IA**
+
+
+---
+
+## Próximas Melhorias
+
+1. Migrar para **DCGAN** com imagens coloridas 64x64
+2. Implementar **Conditional GAN** (gerar dígitos específicos)
+3. Adicionar métricas de avaliação (**FID, IS**)
+4. Criar **galeria persistente** de imagens geradas
+5. Permitir **download direto** das imagens no frontend
+
+
+---
+
+## Contribuições
+
+Este projeto é **público e colaborativo**.Sugestões, melhorias e PRs são muito bem-vindos!
+
+---
 
 ## Data de Criação
-Outubro 2025
+
+Outubro de 2025
