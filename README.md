@@ -54,11 +54,11 @@ A cada época, o Gerador melhora sua capacidade de criar imagens.
 
 ### Epoch 01
 Logo no início, as imagens são apenas **ruído sem forma**:  
-![Treinamento Época 01](outputs/training/epoch_01.png)  
+![Treinamento Época 01](outputs/training/epoch_001_batch_0100.png)  
 
 ### Epoch 19
 Após várias épocas, os dígitos já se tornam **mais reconhecíveis**:  
-![Treinamento Época 19](outputs/training/epoch_19.png)  
+![Treinamento Época 19](outputs/training/epoch_019_batch_0100.png)  
 
 ---
 
